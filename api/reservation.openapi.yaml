@@ -1,0 +1,29 @@
+openapi: 3.0.0
+servers:
+  - description: Cluster Endpoint
+    url: /api
+info:
+  description: Reservation List management for Web-In-Cloud system
+  version: "1.0.0"
+  title: Reservation List Api
+  contact:
+    email: xskriba@stuba.sk
+  license:
+    name: CC BY 4.0
+    url: "https://creativecommons.org/licenses/by/4.0/"
+tags:
+  - name: reservationList
+    description: Reservation List API
+paths:
+  "/health":
+    get:
+      tags:
+        - health
+      summary: Provides health
+      operationId: getHealth
+      description: You get health status of the service
+      responses:
+        "200":
+          description: Service is healthy
+        "500":
+          description: Service is not healthy

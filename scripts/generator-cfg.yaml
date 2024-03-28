@@ -1,0 +1,8 @@
+generatorName: go-gin-server
+templateDir: /local/scripts/templates
+outputDir: /local
+inputSpec: /local/api/reservation.openapi.yaml
+enablePostProcessFile: true
+additionalProperties:
+  apiPath: internal/reservation
+  packageName: reservation
