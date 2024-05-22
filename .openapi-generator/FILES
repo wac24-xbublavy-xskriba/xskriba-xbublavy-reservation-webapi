@@ -1,3 +1,14 @@
 internal/reservation/README.md
-internal/reservation/api_health.go
+internal/reservation/api_ambulance.go
+internal/reservation/api_patient.go
+internal/reservation/api_reservation.go
+internal/reservation/model_ambulance.go
+internal/reservation/model_get_ambulance_reservations_by_id_200_response.go
+internal/reservation/model_medical_examinations.go
+internal/reservation/model_office_hours.go
+internal/reservation/model_patient.go
+internal/reservation/model_request_examination_200_response_inner.go
+internal/reservation/model_request_examination_request.go
+internal/reservation/model_reservation.go
+internal/reservation/model_sex.go
 internal/reservation/routers.go

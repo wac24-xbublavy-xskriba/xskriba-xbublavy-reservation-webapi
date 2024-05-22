@@ -1,29 +1,496 @@
 openapi: 3.0.0
-servers:
-  - description: Cluster Endpoint
-    url: /api
 info:
-  description: Reservation List management for Web-In-Cloud system
-  version: "1.0.0"
-  title: Reservation List Api
-  contact:
-    email: xskriba@stuba.sk
-  license:
-    name: CC BY 4.0
-    url: "https://creativecommons.org/licenses/by/4.0/"
-tags:
-  - name: reservationList
-    description: Reservation List API
+  title: Reservation API
+  version: 1.0.0
 paths:
-  "/health":
+  '/patients':
     get:
       tags:
-        - health
-      summary: Provides health
-      operationId: getHealth
-      description: You get health status of the service
+        - patient
+      summary: Get a list of all patients
+      operationId: getPatients
       responses:
-        "200":
-          description: Service is healthy
-        "500":
-          description: Service is not healthy
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Patient'
+    post:
+      tags:
+        - patient
+      summary: Create a new patient
+      operationId: createPatient
+      requestBody:
+        description: Patient object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+        required: true
+      responses:
+        '201':
+          description: Patient created
+        '400':
+          description: Invalid input
+
+  '/patients/{patientId}':
+    get:
+      tags:
+        - patient
+      summary: Get a patient by ID
+      operationId: getPatientById
+      parameters:
+        - name: patientId
+          in: path
+          description: ID of patient to return
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '404':
+          description: Patient not found
+
+    put:
+      tags:
+        - patient
+      summary: Update an existing patient
+      operationId: updatePatient
+      parameters:
+        - name: patientId
+          in: path
+          description: ID of patient to update
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Patient object that needs to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+        required: true
+      responses:
+        '200':
+          description: Patient updated
+        '400':
+          description: Invalid input
+        '404':
+          description: Patient not found
+
+    delete:
+      tags:
+        - patient
+      summary: Deletes a patient
+      operationId: deletePatient
+      parameters:
+        - name: patientId
+          in: path
+          description: ID of patient to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Patient deleted
+        '404':
+          description: Patient not found
+  '/patients/{patientId}/request-examination':
+    post:
+      tags:
+        - patient
+      summary: Request an examination for a specific patient
+      operationId: requestExamination
+      parameters:
+        - name: patientId
+          in: path
+          description: ID of patient to request examination for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Examination request details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                examinationType:
+                  $ref: '#/components/schemas/MedicalExaminations'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    ambulance:
+                      $ref: '#/components/schemas/Ambulance'
+                    timeSlot:
+                      type: string
+                      format: date-time
+        '400':
+          description: Invalid input
+        '404':
+          description: Patient not found
+  '/patients/{patientId}/reservations':
+    get:
+      tags:
+        - patient
+      summary: Get reservations for a specific patient
+      operationId: getPatientReservations
+      parameters:
+        - name: patientId
+          in: path
+          description: ID of patient to return reservations for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '404':
+          description: Patient not found
+  '/ambulances':
+    get:
+      tags:
+        - ambulance
+      summary: Get a list of all ambulances
+      operationId: getAmbulances
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ambulance'
+    post:
+      tags:
+        - ambulance
+      summary: Create a new ambulance
+      operationId: createAmbulance
+      requestBody:
+        description: Ambulance object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ambulance'
+        required: true
+      responses:
+        '201':
+          description: Ambulance created
+        '400':
+          description: Invalid input
+
+  '/ambulances/{ambulanceId}':
+    get:
+      tags:
+        - ambulance
+      summary: Get an ambulance by ID
+      operationId: getAmbulanceById
+      parameters:
+        - name: ambulanceId
+          in: path
+          description: ID of ambulance to return
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ambulance'
+        '404':
+          description: Ambulance not found
+
+    put:
+      tags:
+        - ambulance
+      summary: Update an existing ambulance
+      operationId: updateAmbulance
+      parameters:
+        - name: ambulanceId
+          in: path
+          description: ID of ambulance to update
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Ambulance object that needs to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ambulance'
+        required: true
+      responses:
+        '200':
+          description: Ambulance updated
+        '400':
+          description: Invalid input
+        '404':
+          description: Ambulance not found
+
+    delete:
+      tags:
+        - ambulance
+      summary: Deletes an ambulance
+      operationId: deleteAmbulance
+      parameters:
+        - name: ambulanceId
+          in: path
+          description: ID of ambulance to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Ambulance deleted
+        '404':
+          description: Ambulance not found
+  '/ambulances/{ambulanceId}/reservations':
+    get:
+      tags:
+        - reservation
+      summary: Get an ambulance by ID along with the list of medical examination reservations
+      operationId: getAmbulanceReservationsById
+      parameters:
+        - name: ambulanceId
+          in: path
+          description: ID of ambulance to return
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ambulance:
+                    $ref: '#/components/schemas/Ambulance'
+                  reservations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Reservation'
+        '404':
+          description: Ambulance not found
+    post:
+      tags:
+        - reservation
+      summary: Create a new reservation
+      operationId: createReservation
+      parameters:
+        - name: ambulanceId
+          in: path
+          description: ID of ambulance for the reservation
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Reservation object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+        required: true
+      responses:
+        '201':
+          description: Reservation created
+        '400':
+          description: Invalid input
+
+  '/ambulances/{ambulanceId}/reservations/{reservationId}':
+    get:
+      tags:
+        - reservation
+      summary: Get a reservation by ID
+      operationId: getReservationById
+      parameters:
+        - name: ambulanceId
+          in: path
+          description: ID of ambulance for the reservation
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: reservationId
+          in: path
+          description: ID of reservation to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '404':
+          description: Reservation not found
+
+    put:
+      tags:
+        - reservation
+      summary: Update an existing reservation
+      operationId: updateReservation
+      parameters:
+        - name: ambulanceId
+          in: path
+          description: ID of ambulance for the reservation
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: reservationId
+          in: path
+          description: ID of reservation to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Reservation object that needs to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+        required: true
+      responses:
+        '200':
+          description: Reservation updated
+        '400':
+          description: Invalid input
+        '404':
+          description: Reservation not found
+
+    delete:
+      tags:
+        - reservation
+      summary: Deletes a reservation
+      operationId: deleteReservation
+      parameters:
+        - name: ambulanceId
+          in: path
+          description: ID of ambulance for the reservation
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: reservationId
+          in: path
+          description: ID of reservation to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Reservation deleted
+        '404':
+          description: Reservation not found
+components:
+  schemas:
+    Sex:
+      type: string
+      enum: ['male', 'female']
+    Patient:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - birthday
+        - sex
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthday:
+          type: string
+          format: date
+        sex:
+          $ref: '#/components/schemas/Sex'
+        bio:
+          type: string
+    OfficeHours:
+      type: object
+      properties:
+        open:
+          type: string
+          format: time
+        close:
+          type: string
+          format: time
+    MedicalExaminations:
+      type: string
+      enum: ['X-ray', 'MRI', 'CT', 'Ultrasound', 'Blood Test']
+    Ambulance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        address:
+          type: string
+        officeHours:
+          $ref: '#/components/schemas/OfficeHours'
+        medicalExaminations:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicalExaminations'
+    Reservation:
+      type: object
+      properties:
+        patient:
+          $ref: '#/components/schemas/Patient'
+        timeSlot:
+          type: string
+          format: date-time
+        message:
+          type: string
+          description: Optional message for the reservation

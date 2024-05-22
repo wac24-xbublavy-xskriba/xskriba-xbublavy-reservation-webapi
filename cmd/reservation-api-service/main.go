@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wac24-xbublavy-xskriba/xskriba-xbublavy-reservation-webapi/api"
+	"github.com/wac24-xbublavy-xskriba/xskriba-xbublavy-reservation-webapi/internal/db_service"
 	"github.com/wac24-xbublavy-xskriba/xskriba-xbublavy-reservation-webapi/internal/reservation"
 
 	"time"
@@ -37,13 +39,15 @@ func main() {
     })
     engine.Use(corsMiddleware)
 
-		// setup context update  middleware
-    // dbService := db_service.NewMongoService[reservation.Ambulance](db_service.MongoServiceConfig{})
-    // defer dbService.Disconnect(context.Background())
-    // engine.Use(func(ctx *gin.Context) {
-    //     ctx.Set("db_service", dbService)
-    //     ctx.Next()
-    // })
+	// setup context update  middleware
+    dbServiceAmbulance := db_service.NewMongoService[reservation.Ambulance](db_service.MongoServiceConfig{})
+    dbServicePatient := db_service.NewMongoService[reservation.Patient](db_service.MongoServiceConfig{})
+    defer dbServiceAmbulance.Disconnect(context.Background())
+    engine.Use(func(ctx *gin.Context) {
+        ctx.Set("db_service_ambulance", dbServiceAmbulance)
+        ctx.Set("db_service_patient", dbServicePatient)
+        ctx.Next()
+    })
 
     // request routings
 		reservation.AddRoutes(engine)
