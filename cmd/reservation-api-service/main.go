@@ -40,8 +40,12 @@ func main() {
     engine.Use(corsMiddleware)
 
 	// setup context update  middleware
-    dbServiceAmbulance := db_service.NewMongoService[reservation.Ambulance](db_service.MongoServiceConfig{})
-    dbServicePatient := db_service.NewMongoService[reservation.Patient](db_service.MongoServiceConfig{})
+    dbServiceAmbulance := db_service.NewMongoService[reservation.Ambulance](db_service.MongoServiceConfig{
+        Collection: "ambulance",
+    })
+    dbServicePatient := db_service.NewMongoService[reservation.Patient](db_service.MongoServiceConfig{
+        Collection: "patient",
+    })
     defer dbServiceAmbulance.Disconnect(context.Background())
     engine.Use(func(ctx *gin.Context) {
         ctx.Set("db_service_ambulance", dbServiceAmbulance)
