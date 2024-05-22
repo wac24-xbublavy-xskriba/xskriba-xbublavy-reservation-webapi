@@ -10,10 +10,17 @@
 
 package reservation
 
-type Sex string
+type CreatePatientRequest struct {
 
-// List of Sex
-const (
-	MALE Sex = "male"
-	FEMALE Sex = "female"
-)
+	Id string `json:"id"`
+
+	FirstName string `json:"firstName"`
+
+	LastName string `json:"lastName"`
+
+	Birthday string `json:"birthday"`
+
+	Sex Sex `json:"sex"`
+
+	Bio string `json:"bio,omitempty"`
+}

@@ -114,48 +114,115 @@ func updateAmbulanceFunc(ctx *gin.Context, updater ambulanceUpdater) {
 }
 
 // CheckDuplicates checks if there are duplicate values in the MedicalExaminations slice
-func (a *Ambulance) CheckMedicalExaminationDuplicates() (bool, []MedicalExaminations) {
-	examinations := make(map[MedicalExaminations]bool)
+func CheckMedicalExaminationDuplicates(examinations []MedicalExaminations) (bool, []MedicalExaminations) {
+	examinationsMap := make(map[MedicalExaminations]bool)
 	var duplicates []MedicalExaminations
-	for _, exam := range a.MedicalExaminations {
-		if _, exists := examinations[exam]; exists {
+	for _, exam := range examinations {
+		if _, exists := examinationsMap[exam]; exists {
 			duplicates = append(duplicates, exam)
 		}
-		examinations[exam] = true
+		examinationsMap[exam] = true
 	}
 	return len(duplicates) > 0, duplicates
 }
 
 // ValidateMedicalExaminations checks if all medical examinations are valid
-func ValidateMedicalExaminations(ambulance Ambulance) (bool, []MedicalExaminations) {
+func ValidateMedicalExaminations(examinations []MedicalExaminations) (bool, []MedicalExaminations) {
 	var incorrectExams []MedicalExaminations
-	for _, exam := range ambulance.MedicalExaminations {
-		if !exam.IsValid() {
-			incorrectExams = append(incorrectExams, exam)
-		}
-	}
+    for _, exam := range examinations {
+        if !exam.IsValid() {
+            incorrectExams = append(incorrectExams, exam)
+        }
+    }
 
-	return len(incorrectExams) == 0, incorrectExams
+    return len(incorrectExams) == 0, incorrectExams
 }
 
 // Validate checks if the Ambulance struct is valid
 func (a *Ambulance) Validate() error {
-	// Check if OfficeHours are valid
-	if !a.OfficeHours.IsValid() {
-		return fmt.Errorf("Invalid office hours. Open time must be before close time and both times must be in the future.")
-	}
+    // Check if OfficeHours are valid
+    if !a.OfficeHours.IsValid() {
+        return fmt.Errorf("Invalid office hours. Open time must be before close time and both times must be in the future.")
+    }
 
-	// Check if MedicalExaminations are valid
-	validExams, incorrectExams := ValidateMedicalExaminations(*a)
-	if !validExams {
-		return fmt.Errorf("Invalid medical examinations: %v", incorrectExams)
-	}
+    // Check if the name is empty
+    if len(a.Name) == 0 {
+        return fmt.Errorf("Name is required.")
+    }
 
-	// Check if MedicalExaminations contain duplicates
-	duplicateExams, duplicates := a.CheckMedicalExaminationDuplicates()
-	if duplicateExams {
-		return fmt.Errorf("The medical examinations contain duplicate values: %v", duplicates)
-	}
+    // Check if the name is at least one character long and max 50 characters long
+    if len(a.Name) > 50 {
+        return fmt.Errorf("Invalid name. Name must be at least one character long and max 50 characters long.")
+    }
 
-	return nil
+    // Check if the address is empty
+    if len(a.Address) == 0 {
+        return fmt.Errorf("Address is required.")
+    }
+
+    // Check if the address is at least one character long and max 50 characters long
+    if len(a.Address) > 50 {
+        return fmt.Errorf("Invalid address. Address must be at least one character long and max 50 characters long.")
+    }
+
+    // Check if the examinations are not empty
+    if len(a.MedicalExaminations) == 0 {
+        return fmt.Errorf("The medical examinations are empty")
+    }
+
+    // Check if MedicalExaminations are valid
+    validExams, incorrectExams := ValidateMedicalExaminations(a.MedicalExaminations)
+    if !validExams {
+        return fmt.Errorf("Invalid medical examinations: %v", incorrectExams)
+    }
+
+    // Check if MedicalExaminations contain duplicates
+    duplicateExams, duplicates := CheckMedicalExaminationDuplicates(a.MedicalExaminations)
+
+    if duplicateExams {
+        return fmt.Errorf("The medical examinations contain duplicate values: %v", duplicates)
+    }
+
+    return nil
+}
+
+func (a *CreateAmbulanceRequest) Validate() error {
+    // Check if OfficeHours are valid
+    if !a.OfficeHours.IsValid() {
+        return fmt.Errorf("Invalid office hours. Open time must be before close time and both times must be in the future.")
+    }
+
+    // Check if the name is empty
+    if len(a.Name) == 0 {
+        return fmt.Errorf("Name is required.")
+    }
+
+    // Check if the name is at least one character long and max 50 characters long
+    if len(a.Name) > 50 {
+        return fmt.Errorf("Invalid name. Name must be at least one character long and max 50 characters long.")
+    }
+
+    // Check if the address is empty
+    if len(a.Address) == 0 {
+        return fmt.Errorf("Address is required.")
+    }
+
+    // Check if the address is at least one character long and max 50 characters long
+    if len(a.Address) > 50 {
+        return fmt.Errorf("Invalid address. Address must be at least one character long and max 50 characters long.")
+    }
+
+    // Check if MedicalExaminations are valid
+    validExams, incorrectExams := ValidateMedicalExaminations(a.MedicalExaminations)
+    if !validExams {
+        return fmt.Errorf("Invalid medical examinations: %v", incorrectExams)
+    }
+
+    // Check if MedicalExaminations contain duplicates
+    duplicateExams, duplicates := CheckMedicalExaminationDuplicates(a.MedicalExaminations)
+    if duplicateExams {
+        return fmt.Errorf("The medical examinations contain duplicate values: %v", duplicates)
+    }
+
+    return nil
 }

@@ -1,7 +1,19 @@
 openapi: 3.0.0
 info:
-  title: Reservation API
-  version: 1.0.0
+  version: '1.0.0'
+  title: Reservation Api
+  contact:
+    email: xbublavy@stuba.sk
+  license:
+    name: CC BY 4.0
+    url: 'https://creativecommons.org/licenses/by/4.0/'
+tags:
+  - name: patient
+    description: Patient management
+  - name: ambulance
+    description: Ambulance management
+  - name: reservation
+    description: Reservation management
 paths:
   '/patients':
     get:
@@ -28,7 +40,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Patient'
+              allOf:
+                - $ref: '#/components/schemas/Patient'
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      readOnly: true
+                  required: [_]
         required: true
       responses:
         '201':
@@ -78,7 +98,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Patient'
+              allOf:
+                - $ref: '#/components/schemas/Patient'
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      readOnly: true
+                  required: [_]
+
         required: true
       responses:
         '200':
@@ -202,7 +231,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Ambulance'
+              allOf:
+                - $ref: '#/components/schemas/Ambulance'
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      readOnly: true
+                  required: [_]
         required: true
       responses:
         '201':
@@ -252,7 +289,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Ambulance'
+              allOf:
+                - $ref: '#/components/schemas/Ambulance'
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      readOnly: true
+                  required: [_]
         required: true
       responses:
         '200':
@@ -355,8 +400,8 @@ paths:
           description: ID of reservation to return
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            format: uuid
       responses:
         '200':
           description: Successful operation
@@ -385,8 +430,8 @@ paths:
           description: ID of reservation to update
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            format: uuid
       requestBody:
         description: Reservation object that needs to be updated
         content:
@@ -420,8 +465,8 @@ paths:
           description: ID of reservation to delete
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            format: uuid
       responses:
         '204':
           description: Reservation deleted
@@ -446,8 +491,12 @@ components:
           format: uuid
         firstName:
           type: string
+          minLength: 1
+          maxLength: 20
         lastName:
           type: string
+          minLength: 1
+          maxLength: 20
         birthday:
           type: string
           format: date
@@ -455,6 +504,7 @@ components:
           $ref: '#/components/schemas/Sex'
         bio:
           type: string
+          maxLength: 200
     OfficeHours:
       type: object
       properties:
@@ -469,14 +519,24 @@ components:
       enum: ['X-ray', 'MRI', 'CT', 'Ultrasound', 'Blood Test']
     Ambulance:
       type: object
+      required:
+        - id
+        - name
+        - address
+        - officeHours
+        - medicalExaminations
       properties:
         id:
           type: string
           format: uuid
         name:
           type: string
+          minLength: 1
+          maxLength: 50
         address:
           type: string
+          minLength: 1
+          maxLength: 50
         officeHours:
           $ref: '#/components/schemas/OfficeHours'
         medicalExaminations:
@@ -485,6 +545,9 @@ components:
             $ref: '#/components/schemas/MedicalExaminations'
     Reservation:
       type: object
+      required:
+        - patient
+        - timeSlot
       properties:
         patient:
           $ref: '#/components/schemas/Patient'
@@ -494,3 +557,4 @@ components:
         message:
           type: string
           description: Optional message for the reservation
+          maxLength: 200

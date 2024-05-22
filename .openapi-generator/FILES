@@ -3,6 +3,8 @@ internal/reservation/api_ambulance.go
 internal/reservation/api_patient.go
 internal/reservation/api_reservation.go
 internal/reservation/model_ambulance.go
+internal/reservation/model_create_ambulance_request.go
+internal/reservation/model_create_patient_request.go
 internal/reservation/model_get_ambulance_reservations_by_id_200_response.go
 internal/reservation/model_medical_examinations.go
 internal/reservation/model_office_hours.go

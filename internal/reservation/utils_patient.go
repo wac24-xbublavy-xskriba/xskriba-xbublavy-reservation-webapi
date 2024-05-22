@@ -3,6 +3,7 @@ package reservation
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wac24-xbublavy-xskriba/xskriba-xbublavy-reservation-webapi/internal/db_service"
@@ -114,9 +115,75 @@ func updatePatientFunc(ctx *gin.Context, updater patientUpdater) {
 }
 
 func (patient *Patient) Validate() error {
-	if !patient.Sex.IsValid() {
-		return fmt.Errorf("Invalid sex")
-	}
-	
-	return nil
+    if !patient.Sex.IsValid() {
+        return fmt.Errorf("Invalid sex")
+    }
+    
+    if len(patient.FirstName) == 0 {
+        return fmt.Errorf("First name is required")
+    }
+    
+    if len(patient.FirstName) > 20 {
+        return fmt.Errorf("First name exceeds maximum length of 20 characters")
+    }
+    
+    if len(patient.LastName) == 0 {
+        return fmt.Errorf("Last name is required")
+    }
+    
+    if len(patient.LastName) > 20 {
+        return fmt.Errorf("Last name exceeds maximum length of 20 characters")
+    }
+    
+    if len(patient.Bio) > 200 {
+        return fmt.Errorf("Bio exceeds maximum length of 200 characters")
+    }
+
+    birthday, err := time.Parse("2006-01-02", patient.Birthday)
+    if err != nil {
+        return fmt.Errorf("Failed to parse birthday: %v", err)
+    }
+    
+    if birthday.After(time.Now()) {
+        return fmt.Errorf("Birthday cannot be in the future")
+    }
+    
+    return nil
+}
+
+func (patient *CreatePatientRequest) Validate() error {
+    if !patient.Sex.IsValid() {
+        return fmt.Errorf("Invalid sex")
+    }
+    
+    if len(patient.FirstName) == 0 {
+        return fmt.Errorf("First name is required")
+    }
+    
+    if len(patient.FirstName) > 20 {
+        return fmt.Errorf("First name exceeds maximum length of 20 characters")
+    }
+    
+    if len(patient.LastName) == 0 {
+        return fmt.Errorf("Last name is required")
+    }
+    
+    if len(patient.LastName) > 20 {
+        return fmt.Errorf("Last name exceeds maximum length of 20 characters")
+    }
+    
+    if len(patient.Bio) > 200 {
+        return fmt.Errorf("Bio exceeds maximum length of 200 characters")
+    }
+    
+    birthday, err := time.Parse("2006-01-02", patient.Birthday)
+    if err != nil {
+        return fmt.Errorf("Failed to parse birthday: %v", err)
+    }
+    
+    if birthday.After(time.Now()) {
+        return fmt.Errorf("Birthday cannot be in the future")
+    }
+    
+    return nil
 }
