@@ -10,13 +10,15 @@
 
 package reservation
 
-import (
-	"time"
-)
+type PatientInput struct {
 
-type RequestExaminationRequest struct {
+	FirstName string `json:"firstName"`
 
-	Date time.Time `json:"date"`
+	LastName string `json:"lastName"`
 
-	ExaminationType MedicalExaminations `json:"examinationType"`
+	Birthday string `json:"birthday"`
+
+	Sex Sex `json:"sex"`
+
+	Bio string `json:"bio,omitempty"`
 }

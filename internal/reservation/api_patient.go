@@ -24,6 +24,9 @@ type PatientAPI interface {
     // CreatePatient - Create a new patient
    CreatePatient(ctx *gin.Context)
 
+    // CreateReservation - Create a new reservation
+   CreateReservation(ctx *gin.Context)
+
     // DeletePatient - Deletes a patient
    DeletePatient(ctx *gin.Context)
 
@@ -55,6 +58,7 @@ func newPatientAPI() PatientAPI {
 
 func (this *implPatientAPI) addRoutes(routerGroup *gin.RouterGroup) {
   routerGroup.Handle( http.MethodPost, "/patients", this.CreatePatient)
+  routerGroup.Handle( http.MethodPost, "/patients/:patientId/reservations", this.CreateReservation)
   routerGroup.Handle( http.MethodDelete, "/patients/:patientId", this.DeletePatient)
   routerGroup.Handle( http.MethodGet, "/patients/:patientId", this.GetPatientById)
   routerGroup.Handle( http.MethodGet, "/patients/:patientId/reservations", this.GetPatientReservations)
@@ -66,6 +70,11 @@ func (this *implPatientAPI) addRoutes(routerGroup *gin.RouterGroup) {
 // Copy following section to separate file, uncomment, and implement accordingly
 // // CreatePatient - Create a new patient
 // func (this *implPatientAPI) CreatePatient(ctx *gin.Context) {
+//  	ctx.AbortWithStatus(http.StatusNotImplemented)
+// }
+//
+// // CreateReservation - Create a new reservation
+// func (this *implPatientAPI) CreateReservation(ctx *gin.Context) {
 //  	ctx.AbortWithStatus(http.StatusNotImplemented)
 // }
 //

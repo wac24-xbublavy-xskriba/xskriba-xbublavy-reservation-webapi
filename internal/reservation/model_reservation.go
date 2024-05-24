@@ -16,9 +16,17 @@ import (
 
 type Reservation struct {
 
+	Id string `json:"id"`
+
 	Patient Patient `json:"patient"`
 
-	TimeSlot time.Time `json:"timeSlot"`
+	Ambulance Ambulance `json:"ambulance"`
+
+	Start time.Time `json:"start"`
+
+	End time.Time `json:"end"`
+
+	ExaminationType MedicalExaminations `json:"examinationType"`
 
 	// Optional message for the reservation
 	Message string `json:"message,omitempty"`

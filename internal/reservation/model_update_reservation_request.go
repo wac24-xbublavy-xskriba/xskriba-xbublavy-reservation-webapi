@@ -10,13 +10,7 @@
 
 package reservation
 
-import (
-	"time"
-)
+type UpdateReservationRequest struct {
 
-type RequestExaminationRequest struct {
-
-	Date time.Time `json:"date"`
-
-	ExaminationType MedicalExaminations `json:"examinationType"`
+	Message string `json:"message,omitempty"`
 }

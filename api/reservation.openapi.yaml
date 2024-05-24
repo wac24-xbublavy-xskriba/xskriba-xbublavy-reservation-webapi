@@ -40,19 +40,15 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/Patient'
-                - type: object
-                  properties:
-                    id:
-                      type: string
-                      format: uuid
-                      readOnly: true
-                  required: [_]
+              $ref: '#/components/schemas/PatientInput'
         required: true
       responses:
         '201':
           description: Patient created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
         '400':
           description: Invalid input
 
@@ -98,20 +94,15 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/Patient'
-                - type: object
-                  properties:
-                    id:
-                      type: string
-                      format: uuid
-                      readOnly: true
-                  required: [_]
-
+              $ref: '#/components/schemas/PatientInput'
         required: true
       responses:
         '200':
           description: Patient updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
         '400':
           description: Invalid input
         '404':
@@ -158,9 +149,12 @@ paths:
               properties:
                 date:
                   type: string
-                  format: date
+                  format: date-time
                 examinationType:
                   $ref: '#/components/schemas/MedicalExaminations'
+              required:
+                - date
+                - examinationType
         required: true
       responses:
         '200':
@@ -168,15 +162,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    ambulance:
-                      $ref: '#/components/schemas/Ambulance'
-                    timeSlot:
-                      type: string
-                      format: date-time
+                $ref: '#/components/schemas/Examination'
         '400':
           description: Invalid input
         '404':
@@ -206,6 +192,35 @@ paths:
                   $ref: '#/components/schemas/Reservation'
         '404':
           description: Patient not found
+    post:
+      tags:
+        - patient
+      summary: Create a new reservation
+      operationId: createReservation
+      parameters:
+        - name: patientId
+          in: path
+          description: ID of patient for the reservation
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Reservation object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationInput'
+        required: true
+      responses:
+        '201':
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid input
   '/ambulances':
     get:
       tags:
@@ -231,19 +246,15 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/Ambulance'
-                - type: object
-                  properties:
-                    id:
-                      type: string
-                      format: uuid
-                      readOnly: true
-                  required: [_]
+              $ref: '#/components/schemas/AmbulanceInput'
         required: true
       responses:
         '201':
           description: Ambulance created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ambulance'
         '400':
           description: Invalid input
 
@@ -289,19 +300,15 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/Ambulance'
-                - type: object
-                  properties:
-                    id:
-                      type: string
-                      format: uuid
-                      readOnly: true
-                  required: [_]
+              $ref: '#/components/schemas/AmbulanceInput'
         required: true
       responses:
         '200':
           description: Ambulance updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ambulance'
         '400':
           description: Invalid input
         '404':
@@ -328,8 +335,8 @@ paths:
   '/ambulances/{ambulanceId}/reservations':
     get:
       tags:
-        - reservation
-      summary: Get an ambulance by ID along with the list of medical examination reservations
+        - ambulance
+      summary: Get reservations for a specific ambulance
       operationId: getAmbulanceReservationsById
       parameters:
         - name: ambulanceId
@@ -345,56 +352,19 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  ambulance:
-                    $ref: '#/components/schemas/Ambulance'
-                  reservations:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Reservation'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
         '404':
           description: Ambulance not found
-    post:
-      tags:
-        - reservation
-      summary: Create a new reservation
-      operationId: createReservation
-      parameters:
-        - name: ambulanceId
-          in: path
-          description: ID of ambulance for the reservation
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        description: Reservation object that needs to be added
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Reservation'
-        required: true
-      responses:
-        '201':
-          description: Reservation created
-        '400':
-          description: Invalid input
 
-  '/ambulances/{ambulanceId}/reservations/{reservationId}':
+  '/reservations/{reservationId}':
     get:
       tags:
         - reservation
       summary: Get a reservation by ID
       operationId: getReservationById
       parameters:
-        - name: ambulanceId
-          in: path
-          description: ID of ambulance for the reservation
-          required: true
-          schema:
-            type: string
-            format: uuid
         - name: reservationId
           in: path
           description: ID of reservation to return
@@ -418,13 +388,6 @@ paths:
       summary: Update an existing reservation
       operationId: updateReservation
       parameters:
-        - name: ambulanceId
-          in: path
-          description: ID of ambulance for the reservation
-          required: true
-          schema:
-            type: string
-            format: uuid
         - name: reservationId
           in: path
           description: ID of reservation to update
@@ -437,11 +400,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Reservation'
+              type: object
+              properties:
+                message:
+                  type: string
+                  maxLength: 200
         required: true
       responses:
         '200':
           description: Reservation updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
         '400':
           description: Invalid input
         '404':
@@ -453,13 +424,6 @@ paths:
       summary: Deletes a reservation
       operationId: deleteReservation
       parameters:
-        - name: ambulanceId
-          in: path
-          description: ID of ambulance for the reservation
-          required: true
-          schema:
-            type: string
-            format: uuid
         - name: reservationId
           in: path
           description: ID of reservation to delete
@@ -505,6 +469,30 @@ components:
         bio:
           type: string
           maxLength: 200
+    PatientInput:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - birthday
+        - sex
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 20
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 20
+        birthday:
+          type: string
+          format: date
+        sex:
+          $ref: '#/components/schemas/Sex'
+        bio:
+          type: string
+          maxLength: 200
     OfficeHours:
       type: object
       properties:
@@ -516,7 +504,7 @@ components:
           format: time
     MedicalExaminations:
       type: string
-      enum: ['X-ray', 'MRI', 'CT', 'Ultrasound', 'Blood Test']
+      enum: ['x_ray', 'mri', 'ct', 'ultrasound', 'blood_test']
     Ambulance:
       type: object
       required:
@@ -543,17 +531,100 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MedicalExaminations'
+    AmbulanceInput:
+      type: object
+      required:
+        - name
+        - address
+        - officeHours
+        - medicalExaminations
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        address:
+          type: string
+          minLength: 1
+          maxLength: 50
+        officeHours:
+          $ref: '#/components/schemas/OfficeHours'
+        medicalExaminations:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicalExaminations'
+    Examination:
+      type: object
+      required:
+        - ambulance
+        - start
+        - end
+        - examinationType
+      properties:
+        ambulance:
+          $ref: '#/components/schemas/Ambulance'
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        examinationType:
+          $ref: '#/components/schemas/MedicalExaminations'
     Reservation:
       type: object
       required:
+        - id
         - patient
-        - timeSlot
+        - ambulance
+        - start
+        - end
+        - examinationType
       properties:
+        id:
+          type: string
+          format: uuid
         patient:
           $ref: '#/components/schemas/Patient'
-        timeSlot:
+        ambulance:
+          $ref: '#/components/schemas/Ambulance'
+        start:
           type: string
           format: date-time
+        end:
+          type: string
+          format: date-time
+        examinationType:
+          $ref: '#/components/schemas/MedicalExaminations'
+        message:
+          type: string
+          description: Optional message for the reservation
+          maxLength: 200
+    ReservationInput:
+      type: object
+      required:
+        - ambulanceId
+        - start
+        - end
+        - examinationType
+      properties:
+        id:
+          type: string
+          format: uuid
+        ambulanceId:
+          type: string
+          format: uuid
+        patientId:
+          type: string
+          format: uuid
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        examinationType:
+          $ref: '#/components/schemas/MedicalExaminations'
         message:
           type: string
           description: Optional message for the reservation

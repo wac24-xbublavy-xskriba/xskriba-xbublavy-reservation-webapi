@@ -95,6 +95,150 @@ func (this *implPatientAPI) CreatePatient(ctx *gin.Context) {
 	}
 }
 
+// CreateReservation - Create a new reservation
+func (this *implPatientAPI) CreateReservation(ctx *gin.Context) {
+	value, exists := ctx.Get("db_service_reservation")
+	if !exists {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"status":  "Internal Server Error",
+				"message": "db not found",
+				"error":   "db not found",
+			})
+		return
+	}
+  
+	db, ok := value.(db_service.DbService[ReservationInput])
+	
+	if !ok {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"status":  "Internal Server Error",
+				"message": "db context is not of required type",
+				"error":   "cannot cast db context to db_service.DbService",
+			})
+		return
+	}
+
+	request := ReservationInput{}
+	err := ctx.BindJSON(&request)
+	if err != nil {
+		ctx.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"status":  "Bad Request",
+				"message": "Invalid request body",
+				"error":   err.Error(),
+			})
+		return
+	}
+
+	reservation := Reservation{}
+
+	// Fetch patient and ambulance from database
+	patientValue, patientExists := ctx.Get("db_service_patient")
+	ambulanceValue, ambulanceExists := ctx.Get("db_service_ambulance")
+
+	if !patientExists || !ambulanceExists {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"status":  "Internal Server Error",
+				"message": "db not found",
+				"error":   "db not found",
+			})
+		return
+	}
+
+	patientDB, patientOK := patientValue.(db_service.DbService[Patient])
+	ambulanceDB, ambulanceOK := ambulanceValue.(db_service.DbService[Ambulance])
+
+	if !patientOK || !ambulanceOK {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"status":  "Internal Server Error",
+				"message": "db context is not of required type",
+				"error":   "cannot cast db context to db_service.DbService",
+			})
+		return
+	}
+
+	// Fetch patient from database
+	patientId := ctx.Param("patientId")
+	patient, err := patientDB.FindDocument(ctx, patientId)
+
+	if err != nil {
+		ctx.JSON(
+			http.StatusBadGateway,
+			gin.H{
+				"status":  "Bad Gateway",
+				"message": "Failed to fetch patient from database",
+				"error":   err.Error(),
+			},
+		)
+		return
+	}
+
+	// Fetch ambulance from database
+	ambulanceId := request.AmbulanceId
+	ambulance, err := ambulanceDB.FindDocument(ctx, ambulanceId)
+
+	if err != nil {
+		ctx.JSON(
+			http.StatusBadGateway,
+			gin.H{
+				"status":  "Bad Gateway",
+				"message": "Failed to fetch ambulance from database",
+				"error":   err.Error(),
+			},
+		)
+		return
+	}
+
+	// Fill patient and ambulance to reservation
+	reservation.Id = uuid.New().String()
+	reservation.Patient = *patient
+	reservation.Ambulance = *ambulance
+	reservation.Start = request.Start
+	reservation.End = request.End
+	reservation.ExaminationType = request.ExaminationType
+	reservation.Message = request.Message
+
+	request.Id = reservation.Id
+	request.PatientId = patient.Id
+
+	err = db.CreateDocument(ctx, reservation.Id, &request)
+
+	switch err {
+	case nil:
+		ctx.JSON(
+			http.StatusCreated,
+			reservation,
+		)
+	case db_service.ErrConflict:
+		ctx.JSON(
+			http.StatusConflict,
+			gin.H{
+				"status":  "Conflict",
+				"message": "Reservation already exists",
+				"error":   err.Error(),
+			},
+		)
+	default:
+		ctx.JSON(
+			http.StatusBadGateway,
+			gin.H{
+				"status":  "Bad Gateway",
+				"message": "Failed to create reservation in database",
+				"error":   err.Error(),
+			},
+		)
+	}
+}
+
 // DeletePatient - Deletes a patient
 func (this *implPatientAPI) DeletePatient(ctx *gin.Context) {
 	value, exists := ctx.Get("db_service_patient")
@@ -205,7 +349,117 @@ func (this *implPatientAPI) GetPatientById(ctx *gin.Context) {
 
 // GetPatientReservations - Get reservations for a specific patient
 func (this *implPatientAPI) GetPatientReservations(ctx *gin.Context) {
- 	ctx.AbortWithStatus(http.StatusNotImplemented)
+	value, exists := ctx.Get("db_service_reservation")
+	if !exists {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"status":  "Internal Server Error",
+				"message": "db_service not found",
+				"error":   "db_service not found",
+			})
+		return
+	}
+  
+	db, ok := value.(db_service.DbService[ReservationInput])
+	if !ok {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"status":  "Internal Server Error",
+				"message": "db_service context is not of type db_service.DbService",
+				"error":   "cannot cast db_service context to db_service.DbService",
+			})
+		return
+	}
+  
+	patientId := ctx.Param("patientId")
+	reservationInputs, err := db.GetDocumentsByField(ctx, "patientid", patientId)
+  
+	if err != nil {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"status":  "Internal Server Error",
+				"message": "Failed to retrieve reservations from database",
+				"error":   err.Error(),
+			})
+		return
+	}
+  
+	if len(reservationInputs) == 0 {
+		reservationInputs = []ReservationInput{}
+	}
+  
+	patientValue, patientExists := ctx.Get("db_service_patient")
+	ambulanceValue, ambulanceExists := ctx.Get("db_service_ambulance")
+
+	if !patientExists || !ambulanceExists {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"status":  "Internal Server Error",
+				"message": "db not found",
+				"error":   "db not found",
+			})
+		return
+	}
+
+	patientDB, patientOK := patientValue.(db_service.DbService[Patient])
+	ambulanceDB, ambulanceOK := ambulanceValue.(db_service.DbService[Ambulance])
+
+	if !patientOK || !ambulanceOK {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"status":  "Internal Server Error",
+				"message": "db context is not of required type",
+				"error":   "cannot cast db context to db_service.DbService",
+			})
+		return
+	}
+
+    reservations := make([]Reservation, len(reservationInputs))
+    for i, input := range reservationInputs {
+        patient, err := patientDB.FindDocument(ctx, input.PatientId)
+        if err != nil {
+            ctx.JSON(
+                http.StatusInternalServerError,
+                gin.H{
+                    "status":  "Internal Server Error",
+                    "message": "Failed to retrieve patient from database",
+                    "error":   err.Error(),
+                })
+            return
+        }
+
+        ambulance, err := ambulanceDB.FindDocument(ctx, input.AmbulanceId)
+        if err != nil {
+            ctx.JSON(
+                http.StatusInternalServerError,
+                gin.H{
+                    "status":  "Internal Server Error",
+                    "message": "Failed to retrieve ambulance from database",
+                    "error":   err.Error(),
+                })
+            return
+        }
+
+        reservations[i] = Reservation{
+            Id:           input.Id,
+            Patient:      *patient,
+            Ambulance:    *ambulance,
+            Start:       input.Start,
+            End:         input.End,
+            ExaminationType: input.ExaminationType,
+            Message:     input.Message,
+        }
+    }
+    
+    ctx.JSON(
+        http.StatusOK,
+        reservations,
+    )
 }
 
 // GetPatients - Get a list of all patients

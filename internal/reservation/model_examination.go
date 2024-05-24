@@ -14,9 +14,13 @@ import (
 	"time"
 )
 
-type RequestExaminationRequest struct {
+type Examination struct {
 
-	Date time.Time `json:"date"`
+	Ambulance Ambulance `json:"ambulance"`
+
+	Start time.Time `json:"start"`
+
+	End time.Time `json:"end"`
 
 	ExaminationType MedicalExaminations `json:"examinationType"`
 }

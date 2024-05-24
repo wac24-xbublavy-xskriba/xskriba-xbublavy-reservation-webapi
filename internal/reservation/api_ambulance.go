@@ -30,6 +30,9 @@ type AmbulanceAPI interface {
     // GetAmbulanceById - Get an ambulance by ID
    GetAmbulanceById(ctx *gin.Context)
 
+    // GetAmbulanceReservationsById - Get reservations for a specific ambulance
+   GetAmbulanceReservationsById(ctx *gin.Context)
+
     // GetAmbulances - Get a list of all ambulances
    GetAmbulances(ctx *gin.Context)
 
@@ -51,6 +54,7 @@ func (this *implAmbulanceAPI) addRoutes(routerGroup *gin.RouterGroup) {
   routerGroup.Handle( http.MethodPost, "/ambulances", this.CreateAmbulance)
   routerGroup.Handle( http.MethodDelete, "/ambulances/:ambulanceId", this.DeleteAmbulance)
   routerGroup.Handle( http.MethodGet, "/ambulances/:ambulanceId", this.GetAmbulanceById)
+  routerGroup.Handle( http.MethodGet, "/ambulances/:ambulanceId/reservations", this.GetAmbulanceReservationsById)
   routerGroup.Handle( http.MethodGet, "/ambulances", this.GetAmbulances)
   routerGroup.Handle( http.MethodPut, "/ambulances/:ambulanceId", this.UpdateAmbulance)
 }
@@ -68,6 +72,11 @@ func (this *implAmbulanceAPI) addRoutes(routerGroup *gin.RouterGroup) {
 //
 // // GetAmbulanceById - Get an ambulance by ID
 // func (this *implAmbulanceAPI) GetAmbulanceById(ctx *gin.Context) {
+//  	ctx.AbortWithStatus(http.StatusNotImplemented)
+// }
+//
+// // GetAmbulanceReservationsById - Get reservations for a specific ambulance
+// func (this *implAmbulanceAPI) GetAmbulanceReservationsById(ctx *gin.Context) {
 //  	ctx.AbortWithStatus(http.StatusNotImplemented)
 // }
 //

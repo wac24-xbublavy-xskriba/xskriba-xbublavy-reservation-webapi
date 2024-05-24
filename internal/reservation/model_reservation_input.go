@@ -14,9 +14,20 @@ import (
 	"time"
 )
 
-type RequestExaminationRequest struct {
+type ReservationInput struct {
 
-	Date time.Time `json:"date"`
+	Id string `json:"id,omitempty"`
+
+	AmbulanceId string `json:"ambulanceId"`
+
+	PatientId string `json:"patientId,omitempty"`
+
+	Start time.Time `json:"start"`
+
+	End time.Time `json:"end"`
 
 	ExaminationType MedicalExaminations `json:"examinationType"`
+
+	// Optional message for the reservation
+	Message string `json:"message,omitempty"`
 }

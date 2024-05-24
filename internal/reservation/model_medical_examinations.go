@@ -14,9 +14,9 @@ type MedicalExaminations string
 
 // List of MedicalExaminations
 const (
-	X_RAY MedicalExaminations = "X-ray"
-	MRI MedicalExaminations = "MRI"
-	CT MedicalExaminations = "CT"
-	ULTRASOUND MedicalExaminations = "Ultrasound"
-	BLOOD_TEST MedicalExaminations = "Blood Test"
+	X_RAY MedicalExaminations = "x_ray"
+	MRI MedicalExaminations = "mri"
+	CT MedicalExaminations = "ct"
+	ULTRASOUND MedicalExaminations = "ultrasound"
+	BLOOD_TEST MedicalExaminations = "blood_test"
 )

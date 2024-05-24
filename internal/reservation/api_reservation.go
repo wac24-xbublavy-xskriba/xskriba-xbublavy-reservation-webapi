@@ -21,14 +21,8 @@ type ReservationAPI interface {
    // internal registration of api routes
    addRoutes(routerGroup *gin.RouterGroup)
 
-    // CreateReservation - Create a new reservation
-   CreateReservation(ctx *gin.Context)
-
     // DeleteReservation - Deletes a reservation
    DeleteReservation(ctx *gin.Context)
-
-    // GetAmbulanceReservationsById - Get an ambulance by ID along with the list of medical examination reservations
-   GetAmbulanceReservationsById(ctx *gin.Context)
 
     // GetReservationById - Get a reservation by ID
    GetReservationById(ctx *gin.Context)
@@ -48,26 +42,14 @@ func newReservationAPI() ReservationAPI {
 }
 
 func (this *implReservationAPI) addRoutes(routerGroup *gin.RouterGroup) {
-  routerGroup.Handle( http.MethodPost, "/ambulances/:ambulanceId/reservations", this.CreateReservation)
-  routerGroup.Handle( http.MethodDelete, "/ambulances/:ambulanceId/reservations/:reservationId", this.DeleteReservation)
-  routerGroup.Handle( http.MethodGet, "/ambulances/:ambulanceId/reservations", this.GetAmbulanceReservationsById)
-  routerGroup.Handle( http.MethodGet, "/ambulances/:ambulanceId/reservations/:reservationId", this.GetReservationById)
-  routerGroup.Handle( http.MethodPut, "/ambulances/:ambulanceId/reservations/:reservationId", this.UpdateReservation)
+  routerGroup.Handle( http.MethodDelete, "/reservations/:reservationId", this.DeleteReservation)
+  routerGroup.Handle( http.MethodGet, "/reservations/:reservationId", this.GetReservationById)
+  routerGroup.Handle( http.MethodPut, "/reservations/:reservationId", this.UpdateReservation)
 }
 
 // Copy following section to separate file, uncomment, and implement accordingly
-// // CreateReservation - Create a new reservation
-// func (this *implReservationAPI) CreateReservation(ctx *gin.Context) {
-//  	ctx.AbortWithStatus(http.StatusNotImplemented)
-// }
-//
 // // DeleteReservation - Deletes a reservation
 // func (this *implReservationAPI) DeleteReservation(ctx *gin.Context) {
-//  	ctx.AbortWithStatus(http.StatusNotImplemented)
-// }
-//
-// // GetAmbulanceReservationsById - Get an ambulance by ID along with the list of medical examination reservations
-// func (this *implReservationAPI) GetAmbulanceReservationsById(ctx *gin.Context) {
 //  	ctx.AbortWithStatus(http.StatusNotImplemented)
 // }
 //
