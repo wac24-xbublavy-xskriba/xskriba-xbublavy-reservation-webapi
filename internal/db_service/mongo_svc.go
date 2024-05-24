@@ -18,6 +18,7 @@ import (
 type DbService[DocType interface{}] interface {
     GetDocuments(ctx context.Context) ([]DocType, error)
     GetDocumentsByField(ctx context.Context, field string, value string) ([]DocType, error)
+    GetDocumentsByArrayField(ctx context.Context, field string, value string) ([]DocType, error)
     CreateDocument(ctx context.Context, id string, document *DocType) error
     FindDocument(ctx context.Context, id string) (*DocType, error)
     UpdateDocument(ctx context.Context, id string, document *DocType) error
@@ -188,6 +189,27 @@ func (this *mongoSvc[DocType]) GetDocumentsByField(ctx context.Context, field st
     db := client.Database(this.DbName)
     collection := db.Collection(this.Collection)
     cursor, err := collection.Find(ctx, bson.D{{Key: field, Value: value}})
+    if err != nil {
+        return nil, err
+    }
+    defer cursor.Close(ctx)
+    var documents []DocType
+    if err := cursor.All(ctx, &documents); err != nil {
+        return nil, err
+    }
+    return documents, nil
+}
+
+func (this *mongoSvc[DocType]) GetDocumentsByArrayField(ctx context.Context, field string, value string) ([]DocType, error) {
+    ctx, contextCancel := context.WithTimeout(ctx, this.Timeout)
+    defer contextCancel()
+    client, err := this.connect(ctx)
+    if err != nil {
+        return nil, err
+    }
+    db := client.Database(this.DbName)
+    collection := db.Collection(this.Collection)
+    cursor, err := collection.Find(ctx, bson.D{{Key: field, Value: bson.D{{Key: "$in", Value: value}}}})
     if err != nil {
         return nil, err
     }

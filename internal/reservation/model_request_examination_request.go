@@ -10,13 +10,9 @@
 
 package reservation
 
-import (
-	"time"
-)
-
 type RequestExaminationRequest struct {
 
-	Date time.Time `json:"date"`
+	Date string `json:"date"`
 
 	ExaminationType MedicalExaminations `json:"examinationType"`
 }
