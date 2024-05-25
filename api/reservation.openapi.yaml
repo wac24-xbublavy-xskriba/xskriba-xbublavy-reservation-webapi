@@ -1,4 +1,7 @@
 openapi: 3.0.0
+servers:
+  - description: Cluster Endpoint
+    url: /api
 info:
   version: '1.0.0'
   title: Reservation Api
