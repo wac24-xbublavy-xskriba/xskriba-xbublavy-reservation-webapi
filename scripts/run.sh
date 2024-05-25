@@ -35,7 +35,7 @@ case "$command" in
         mongo up
         ;;
     "docker")
-        docker build -t annotaid/reservation-api-service:local-build -f ${ProjectRoot}/build/docker/Dockerfile .
+        docker build -t annotaid/reservation-webapi:local-build -f ${ProjectRoot}/build/docker/Dockerfile .
         ;;
     *)
         echo "Unknown command: $command"
