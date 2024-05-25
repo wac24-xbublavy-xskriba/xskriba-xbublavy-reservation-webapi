@@ -136,6 +136,7 @@ func (this *implAmbulanceAPI) DeleteAmbulance(ctx *gin.Context) {
               "error":   err.Error(),
           },
       )
+      return
   default:
       ctx.JSON(
           http.StatusBadGateway,
@@ -144,6 +145,7 @@ func (this *implAmbulanceAPI) DeleteAmbulance(ctx *gin.Context) {
               "message": "Failed to delete ambulance from database",
               "error":   err.Error(),
           })
+        return
   }
 
   err = reservationDB.DeleteDocumentsByField(ctx, "ambulanceid", ambulanceId)

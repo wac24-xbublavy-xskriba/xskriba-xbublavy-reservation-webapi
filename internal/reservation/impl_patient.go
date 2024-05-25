@@ -282,6 +282,7 @@ func (this *implPatientAPI) DeletePatient(ctx *gin.Context) {
 				"error":   err.Error(),
 			},
 		)
+		return
 	default:
 		ctx.JSON(
 			http.StatusBadGateway,
@@ -290,6 +291,7 @@ func (this *implPatientAPI) DeletePatient(ctx *gin.Context) {
 				"message": "Failed to delete patient from database",
 				"error":   err.Error(),
 			})
+		return
 	}
 
 	err = reservationDB.DeleteDocumentsByField(ctx, "patientid", patientId)
