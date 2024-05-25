@@ -18,7 +18,7 @@ import (
 type DbService[DocType interface{}] interface {
     GetDocuments(ctx context.Context) ([]DocType, error)
     GetDocumentsByField(ctx context.Context, field string, value string) ([]DocType, error)
-    GetDocumentsByArrayField(ctx context.Context, field string, value string) ([]DocType, error)
+    GetDocumentsByArrayField(ctx context.Context, field string, value []string) ([]DocType, error)
     CreateDocument(ctx context.Context, id string, document *DocType) error
     FindDocument(ctx context.Context, id string) (*DocType, error)
     UpdateDocument(ctx context.Context, id string, document *DocType) error
@@ -200,7 +200,7 @@ func (this *mongoSvc[DocType]) GetDocumentsByField(ctx context.Context, field st
     return documents, nil
 }
 
-func (this *mongoSvc[DocType]) GetDocumentsByArrayField(ctx context.Context, field string, value string) ([]DocType, error) {
+func (this *mongoSvc[DocType]) GetDocumentsByArrayField(ctx context.Context, field string, value []string) ([]DocType, error) {
     ctx, contextCancel := context.WithTimeout(ctx, this.Timeout)
     defer contextCancel()
     client, err := this.connect(ctx)

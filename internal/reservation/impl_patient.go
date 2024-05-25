@@ -560,7 +560,7 @@ func (this *implPatientAPI) RequestExamination(ctx *gin.Context) {
 		return
 	}
 
-	ambulances, err := ambulanceDB.GetDocumentsByArrayField(ctx, "medicalexaminations", string(request.ExaminationType))
+	ambulances, err := ambulanceDB.GetDocumentsByArrayField(ctx, "medicalexaminations", []string{string(request.ExaminationType)})
 
 	if err != nil {
 		ctx.JSON(
@@ -668,7 +668,20 @@ func (this *implPatientAPI) RequestExamination(ctx *gin.Context) {
 			}
 
 			reservationDuration := reservationInput.End.Sub(reservationInput.Start)
-			reservationOffset := reservationInput.Start.Sub(openTime)
+
+			reservationHours, err := time.Parse("15:04", reservationInput.Start.Format("15:04"))
+			if err != nil {
+				ctx.JSON(
+					http.StatusInternalServerError,
+					gin.H{
+						"status":  "Internal Server Error",
+						"message": "Failed to parse reservation start time",
+						"error":   err.Error(),
+					})
+				return
+			}
+
+			reservationOffset := reservationHours.Sub(openTime)
 
 			startIndex := int(reservationOffset.Minutes() / interval.Minutes())
 			numReservationIntervals := int(reservationDuration.Minutes() / interval.Minutes())
@@ -678,22 +691,22 @@ func (this *implPatientAPI) RequestExamination(ctx *gin.Context) {
 			}
 		}
 
-		for i := 0; i < numIntervals; i++ {
+		for i := 0; i < numIntervals - 3; i++ {
 			found := true
 			for j := 0; j <= 3; j++ {
 				if intervals[i + j] {
-					i += j - 1
+					i += j
 					found = false
 					break
 				}
 			}
 
 			if found {
-				// startIndex := i
-				// endIndex := i + 3
+				startIndex := i
+				endIndex := i + 4
 
-				startTime := requestDate  // TODO
-				endTime := requestDate
+				startTime := requestDate.Add(time.Duration(openTime.Hour()) * time.Hour).Add(time.Duration(openTime.Minute()) * time.Minute).Add(interval * time.Duration(startIndex))
+				endTime := requestDate.Add(time.Duration(openTime.Hour()) * time.Hour).Add(time.Duration(openTime.Minute()) * time.Minute).Add(interval * time.Duration(endIndex))
 
 				examinations = append(examinations, Examination{
 					Ambulance: ambulance,
@@ -706,6 +719,8 @@ func (this *implPatientAPI) RequestExamination(ctx *gin.Context) {
 			}
 		}
 	}
+
+	ctx.JSON(http.StatusOK, examinations)
 }
 
 // UpdatePatient - Update an existing patient
