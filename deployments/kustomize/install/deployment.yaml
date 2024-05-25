@@ -1,4 +1,4 @@
-reservationapiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: xskriba-xbublavy-reservation-webapi
@@ -12,48 +12,6 @@ spec:
       labels:
         pod: xskriba-xbublavy-reservation-webapi-label
     spec:
-      volumes:
-        - name: init-scripts
-          configMap:
-            name: xskriba-xbublavy-reservation-webapi-mongodb-init
-      initContainers:
-        - name: init-mongodb
-          image: mongo:latest
-          imagePullPolicy: Always
-          command: ['mongosh', '--nodb', '-f', '/scripts/init-db.js']
-          volumeMounts:
-            - name: init-scripts
-              mountPath: /scripts
-          env:
-            - name: RESERVATION_API_PORT
-              value: '8080'
-            - name: RESERVATION_API_MONGODB_HOST
-              value: mongodb
-            - name: RESERVATION_API_MONGODB_PORT
-              value: '27017'
-            - name: RESERVATION_API_MONGODB_USERNAME
-              value: ''
-            - name: RESERVATION_API_MONGODB_PASSWORD
-              value: ''
-            - name: RESERVATION_API_MONGODB_DATABASE
-              valueFrom:
-                configMapKeyRef:
-                  name: xskriba-xbublavy-reservation-webapi-config
-                  key: database
-            - name: RESERVATION_API_MONGODB_COLLECTION
-              valueFrom:
-                configMapKeyRef:
-                  name: xskriba-xbublavy-reservation-webapi-config
-                  key: collection
-            - name: RETRY_CONNECTION_SECONDS
-              value: '5'
-          resources:
-            requests:
-              memory: '128Mi'
-              cpu: '0.01'
-            limits:
-              memory: '256Mi'
-              cpu: '0.1'
       containers:
         - name: xskriba-xbublavy-reservation-webapi-container
           image: annotaid/reservation-webapi:latest
@@ -118,4 +76,46 @@ spec:
               cpu: '0.01'
             limits:
               memory: '64M'
+              cpu: '0.1'
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: xskriba-xbublavy-reservation-webapi-mongodb-init
+      initContainers:
+        - name: init-mongodb
+          image: mongo:latest
+          imagePullPolicy: Always
+          command: ['mongosh', '--nodb', '-f', '/scripts/init-db.js']
+          volumeMounts:
+            - name: init-scripts
+              mountPath: /scripts
+          env:
+            - name: RESERVATION_API_PORT
+              value: '8080'
+            - name: RESERVATION_API_MONGODB_HOST
+              value: mongodb
+            - name: RESERVATION_API_MONGODB_PORT
+              value: '27017'
+            - name: RESERVATION_API_MONGODB_USERNAME
+              value: ''
+            - name: RESERVATION_API_MONGODB_PASSWORD
+              value: ''
+            - name: RESERVATION_API_MONGODB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: xskriba-xbublavy-reservation-webapi-config
+                  key: database
+            - name: RESERVATION_API_MONGODB_COLLECTION
+              valueFrom:
+                configMapKeyRef:
+                  name: xskriba-xbublavy-reservation-webapi-config
+                  key: collection
+            - name: RETRY_CONNECTION_SECONDS
+              value: '5'
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '0.01'
+            limits:
+              memory: '256Mi'
               cpu: '0.1'
