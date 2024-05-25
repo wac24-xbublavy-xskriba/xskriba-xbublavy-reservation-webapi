@@ -186,7 +186,7 @@ func (a *Ambulance) Validate() error {
     return nil
 }
 
-func (a *CreateAmbulanceRequest) Validate() error {
+func (a *AmbulanceInput) Validate() error {
     // Check if OfficeHours are valid
     if !a.OfficeHours.IsValid() {
         return fmt.Errorf("Invalid office hours. Open time must be before close time and both times must be in the future.")

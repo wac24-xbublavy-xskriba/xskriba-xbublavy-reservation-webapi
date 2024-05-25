@@ -151,7 +151,7 @@ func (patient *Patient) Validate() error {
     return nil
 }
 
-func (patient *CreatePatientRequest) Validate() error {
+func (patient *PatientInput) Validate() error {
     if !patient.Sex.IsValid() {
         return fmt.Errorf("Invalid sex")
     }
