@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xskriba-xbublavy-reservation-webapi
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: init-mongodb
+          env:
+            - name: RESERVATION_API_MONGODB_HOST
+              value: null
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-connection
+                  key: host
+            - name: RESERVATION_API_MONGODB_PORT
+              value: null
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-connection
+                  key: port
+            - name: RESERVATION_API_MONGODB_USERNAME
+              value: null
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-auth
+                  key: username
+            - name: RESERVATION_API_MONGODB_PASSWORD
+              value: null
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-auth
+                  key: password
+      containers:
+        - name: xskriba-xbublavy-reservation-webapi-container
+          env:
+            - name: RESERVATION_API_MONGODB_HOST
+              value: null
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-connection
+                  key: host
+            - name: RESERVATION_API_MONGODB_PORT
+              value: null
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-connection
+                  key: port
+            - name: RESERVATION_API_MONGODB_USERNAME
+              value: null
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-auth
+                  key: username
+            - name: RESERVATION_API_MONGODB_PASSWORD
+              value: null
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-auth
+                  key: password
