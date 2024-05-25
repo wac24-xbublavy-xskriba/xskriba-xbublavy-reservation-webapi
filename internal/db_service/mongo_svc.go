@@ -23,6 +23,7 @@ type DbService[DocType interface{}] interface {
     FindDocument(ctx context.Context, id string) (*DocType, error)
     UpdateDocument(ctx context.Context, id string, document *DocType) error
     DeleteDocument(ctx context.Context, id string) error
+    DeleteDocumentsByField(ctx context.Context, field string, value string) error
     Disconnect(ctx context.Context) error
 }
 
@@ -307,5 +308,18 @@ func (this *mongoSvc[DocType]) DeleteDocument(ctx context.Context, id string) er
         return result.Err()
     }
     _, err = collection.DeleteOne(ctx, bson.D{{Key: "id", Value: id}})
+    return err
+}
+
+func (this *mongoSvc[DocType]) DeleteDocumentsByField(ctx context.Context, field string, value string) error {
+    ctx, contextCancel := context.WithTimeout(ctx, this.Timeout)
+    defer contextCancel()
+    client, err := this.connect(ctx)
+    if err != nil {
+        return err
+    }
+    db := client.Database(this.DbName)
+    collection := db.Collection(this.Collection)
+    _, err = collection.DeleteMany(ctx, bson.D{{Key: field, Value: value}})
     return err
 }

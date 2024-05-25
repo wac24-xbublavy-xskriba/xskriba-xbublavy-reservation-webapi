@@ -96,7 +96,9 @@ func (this *implAmbulanceAPI) CreateAmbulance(ctx *gin.Context) {
 // DeleteAmbulance - Deletes an ambulance
 func (this *implAmbulanceAPI) DeleteAmbulance(ctx *gin.Context) {
   value, exists := ctx.Get("db_service_ambulance")
-  if !exists {
+  reservationValue, reservationExists := ctx.Get("db_service_reservation")
+
+  if !exists || !reservationExists {
       ctx.JSON(
           http.StatusInternalServerError,
           gin.H{
@@ -108,7 +110,8 @@ func (this *implAmbulanceAPI) DeleteAmbulance(ctx *gin.Context) {
   }
 
   db, ok := value.(db_service.DbService[Ambulance])
-  if !ok {
+  reservationDB, reservationOK := reservationValue.(db_service.DbService[ReservationInput])
+  if !ok || !reservationOK {
       ctx.JSON(
           http.StatusInternalServerError,
           gin.H{
@@ -124,7 +127,6 @@ func (this *implAmbulanceAPI) DeleteAmbulance(ctx *gin.Context) {
 
   switch err {
   case nil:
-      ctx.AbortWithStatus(http.StatusNoContent)
   case db_service.ErrNotFound:
       ctx.JSON(
           http.StatusNotFound,
@@ -140,6 +142,30 @@ func (this *implAmbulanceAPI) DeleteAmbulance(ctx *gin.Context) {
           gin.H{
               "status":  "Bad Gateway",
               "message": "Failed to delete ambulance from database",
+              "error":   err.Error(),
+          })
+  }
+
+  err = reservationDB.DeleteDocumentsByField(ctx, "ambulanceid", ambulanceId)
+
+  switch err {
+  case nil:
+    ctx.AbortWithStatus(http.StatusNoContent)
+  case db_service.ErrNotFound:
+      ctx.JSON(
+          http.StatusNotFound,
+          gin.H{
+              "status":  "Not Found",
+              "message": "Reservations not found",
+              "error":   err.Error(),
+          },
+      )
+  default:
+      ctx.JSON(
+          http.StatusBadGateway,
+          gin.H{
+              "status":  "Bad Gateway",
+              "message": "Failed to delete ambulance reservations from database",
               "error":   err.Error(),
           })
   }
