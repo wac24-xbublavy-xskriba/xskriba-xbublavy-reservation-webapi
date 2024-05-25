@@ -546,6 +546,14 @@ func isDatetimeInsideDate(date time.Time, datetime time.Time) bool {
 	return year == datetimeYear && month == datetimeMonth && day == datetimeDay
 }
 
+var examinationTimes = map[MedicalExaminations]int{
+	"x_ray": 4, // 60 minutes
+	"blood_test": 1, // 15 minutes
+	"ultrasound": 2, // 30 minutes
+	"mri": 6, // 90 minutes
+	"ct": 3, // 45 minutes
+}
+
 // RequestExamination - Request an examination for a specific patient
 func (this *implPatientAPI) RequestExamination(ctx *gin.Context) {
 	ambulanceValue, ambulanceExists := ctx.Get("db_service_ambulance")
@@ -718,9 +726,11 @@ func (this *implPatientAPI) RequestExamination(ctx *gin.Context) {
 			}
 		}
 
-		for i := 0; i < numIntervals - 3; i++ {
+		examinationTime := examinationTimes[request.ExaminationType]
+
+		for i := 0; i < numIntervals - examinationTime - 1; i++ {
 			found := true
-			for j := 0; j <= 3; j++ {
+			for j := 0; j <= examinationTime - 1; j++ {
 				if intervals[i + j] {
 					i += j
 					found = false
@@ -730,7 +740,7 @@ func (this *implPatientAPI) RequestExamination(ctx *gin.Context) {
 
 			if found {
 				startIndex := i
-				endIndex := i + 4
+				endIndex := i + examinationTime
 
 				startTime := requestDate.Add(time.Duration(openTime.Hour()) * time.Hour).Add(time.Duration(openTime.Minute()) * time.Minute).Add(interval * time.Duration(startIndex))
 				endTime := requestDate.Add(time.Duration(openTime.Hour()) * time.Hour).Add(time.Duration(openTime.Minute()) * time.Minute).Add(interval * time.Duration(endIndex))
