@@ -162,7 +162,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Examination'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Examination'
         '400':
           description: Invalid input
         '404':
